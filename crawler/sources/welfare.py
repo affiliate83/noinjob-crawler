@@ -119,7 +119,7 @@ def _build_content(item, detail):
     if detail_url:
         content += (
             f'<div class="welfare-link">\n'
-            f'<a href="{detail_url}" target="_blank" rel="noopener">복지로에서 자세한 내용 확인하기 →</a>\n'
+            f'<a href="{detail_url}">복지로에서 자세한 내용 확인하기 →</a>\n'
             f'</div>\n\n'
         )
 
