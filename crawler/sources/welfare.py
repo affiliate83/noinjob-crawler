@@ -123,7 +123,7 @@ def _build_content(item, detail):
             f'</div>\n\n'
         )
 
-    content += '<p class="data-source">※ 본 정보는 한국사회보장정보원(복지로)의 공공데이터를 활용합니다.</p>\n</div>'
+    content += '</div>'
     return content
 
 

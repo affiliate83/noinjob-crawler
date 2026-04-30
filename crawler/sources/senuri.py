@@ -80,7 +80,6 @@ def _build_content(item, detail):
     emp_type   = EMPL_TYPE.get(t(item, 'emplymShpNm'), t(item, 'emplymShpNm'))
     start_date = fmt_date(t(item, 'frDd'))
     deadline   = fmt_date(t(item, 'toDd'))
-    source     = t(item, 'stmNm')
     age        = t(detail, 'age')
     count      = t(detail, 'clltPrnnum')
     clerk      = t(detail, 'clerk')
@@ -99,7 +98,6 @@ def _build_content(item, detail):
         ('연락처', phone),
         ('홈페이지', f'<a href="{homepage}">{homepage}</a>' if homepage else ''),
         ('기타', etc),
-        ('출처', source),
     ]
 
     table_rows = '\n'.join(
@@ -108,7 +106,7 @@ def _build_content(item, detail):
     )
 
     content = f'<div class="job-detail">\n\n<h2>채용 정보</h2>\n<table class="job-table">\n{table_rows}\n</table>\n\n'
-    content += '<p class="data-source">※ 본 정보는 한국노인인력개발원의 공공데이터를 활용합니다.</p>\n</div>'
+    content += '</div>'
     return content
 
 
