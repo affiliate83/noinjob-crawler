@@ -4,6 +4,7 @@ import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from utils.logger import logger
+from utils.enricher import enrich_welfare
 
 load_dotenv()
 
@@ -122,6 +123,18 @@ def _build_content(item, detail):
             f'<a href="{detail_url}">복지로에서 자세한 내용 확인하기 →</a>\n'
             f'</div>\n\n'
         )
+
+    enriched = enrich_welfare({
+        'name':     _xml_text(item, 'servNm'),
+        'overview': overview,
+        'target':   target,
+        'criteria': criteria,
+        'how_to':   how_to,
+        'dept':     dept,
+        'method':   method,
+    })
+    if enriched:
+        content += enriched + '\n\n'
 
     content += '</div>'
     return content

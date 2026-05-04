@@ -4,6 +4,7 @@ import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from utils.logger import logger
+from utils.enricher import enrich_job
 
 load_dotenv()
 
@@ -106,6 +107,15 @@ def _build_content(item, detail):
     )
 
     content = f'<div class="job-detail">\n\n<h2>채용 정보</h2>\n<table class="job-table">\n{table_rows}\n</table>\n\n'
+
+    enriched = enrich_job({
+        'company': company, 'address': address, 'emp_type': emp_type,
+        'count': count, 'age': age, 'start_date': start_date,
+        'deadline': deadline, 'etc': etc,
+    })
+    if enriched:
+        content += enriched + '\n\n'
+
     content += '</div>'
     return content
 
