@@ -1,8 +1,11 @@
 import os
+import re
 import anthropic
 from dotenv import load_dotenv
 
 load_dotenv()
+
+_FENCE_RE = re.compile(r'^```[a-z]*\s*|\s*```$', re.MULTILINE)
 
 _client = None
 
@@ -61,7 +64,7 @@ def enrich_job(data: dict) -> str:
             max_tokens=1500,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        return msg.content[0].text.strip()
+        return _FENCE_RE.sub('', msg.content[0].text).strip()
     except Exception:
         return ''
 
@@ -107,7 +110,7 @@ def enrich_welfare(data: dict) -> str:
             max_tokens=1500,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        return msg.content[0].text.strip()
+        return _FENCE_RE.sub('', msg.content[0].text).strip()
     except Exception:
         return ''
 
@@ -157,6 +160,6 @@ def enrich_from_html(html: str, post_type: str) -> str:
             max_tokens=1500,
             messages=[{'role': 'user', 'content': prompt}],
         )
-        return msg.content[0].text.strip()
+        return _FENCE_RE.sub('', msg.content[0].text).strip()
     except Exception:
         return ''
