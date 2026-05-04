@@ -20,9 +20,10 @@ PATTERNS = [
     re.compile(r'<p class=["\']data-source["\']>.*?</p>\s*', re.DOTALL),
     # 출처 테이블 행 (워크넷 등)
     re.compile(r'\s*<tr><th>출처</th><td>.*?</td></tr>', re.DOTALL),
-    # Claude가 삽입한 마크다운 코드펜스 (```html ... ```)
-    re.compile(r'```html\s*', re.IGNORECASE),
-    re.compile(r'```\s*'),
+    # WordPress가 wpautop으로 감싼 코드펜스: <p>```html</p> 또는 <p>```</p>
+    re.compile(r'<p>```[a-z]*\s*</p>\s*', re.IGNORECASE),
+    # 감싸지지 않은 raw 코드펜스
+    re.compile(r'```[^\n`]*\n?'),
 ]
 
 
