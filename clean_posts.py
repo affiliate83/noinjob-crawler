@@ -20,9 +20,12 @@ PATTERNS = [
     re.compile(r'<p class=["\']data-source["\']>.*?</p>\s*', re.DOTALL),
     # 출처 테이블 행 (워크넷 등)
     re.compile(r'\s*<tr><th>출처</th><td>.*?</td></tr>', re.DOTALL),
-    # WordPress가 wpautop으로 감싼 코드펜스: <p>```html</p> 또는 <p>```</p>
+    # WordPress wptexturize가 ``(백틱 2개)를 &#8220;으로 변환한 형태
+    # ```html → &#8220;`html,  ``` → &#8220;`
+    re.compile(r'<p>\s*&#8220;`[a-z]*\s*</p>\s*', re.IGNORECASE),
+    re.compile(r'&#8220;`[a-z]*\s*', re.IGNORECASE),
+    # 혹시 변환 전 raw 리터럴 백틱이 남아있을 경우
     re.compile(r'<p>```[a-z]*\s*</p>\s*', re.IGNORECASE),
-    # 감싸지지 않은 raw 코드펜스
     re.compile(r'```[^\n`]*\n?'),
 ]
 

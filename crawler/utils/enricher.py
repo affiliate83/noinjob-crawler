@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_FENCE_RE = re.compile(r'```[^\n`]*\n?')
+_FENCE_RE = re.compile(r'```[^\n`]*\n?|&#8220;`[a-z]*\s*', re.IGNORECASE)
 
 _client = None
 
