@@ -1,0 +1,721 @@
+/* =============================================
+   Pretendard 폰트
+   ============================================= */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+body, p, span, div, a, h1, h2, h3, h4, h5, h6,
+li, td, th, input, button, textarea, select, label {
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, sans-serif !important;
+}
+/* dashicons 보호 (WP 관리바 아이콘) */
+#wpadminbar, #wpadminbar * {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+.dashicons, .dashicons-before::before,
+.wp-menu-image::before, .ab-icon::before {
+  font-family: dashicons !important;
+}
+
+/* =============================================
+   전역 리셋
+   ============================================= */
+a, a:visited, a:hover, a:active, a:focus {
+  text-decoration: none !important;
+}
+body {
+  background: #f5f6f8 !important;
+  color: #1a1a2e !important;
+  line-height: 1.7 !important;
+}
+
+/* =============================================
+   홈 Astra 컨테이너 초기화
+   ============================================= */
+.home .entry-title { display: none !important; }
+.home .entry-content,
+.home #primary,
+.home .ast-container,
+.home .site-content,
+.home .ast-row {
+  max-width: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+.home .entry-content > p:empty { display: none !important; }
+
+/* =============================================
+   헤더
+   ============================================= */
+.site-header, .ast-primary-header-bar, #masthead {
+  background: #fff !important;
+  border-bottom: 1px solid #e8eaed !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06) !important;
+}
+/* 헤더 내부 컨테이너 너비를 콘텐츠(1160px)에 맞춤 */
+.ast-primary-header-bar .ast-container,
+#masthead .ast-container {
+  max-width: 1160px !important;
+  margin: 0 auto !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.main-header-menu .menu-item > a {
+  color: #333 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  transition: color 0.2s, background 0.2s !important;
+}
+.main-header-menu .menu-item > a:hover {
+  color: #1a6fbf !important;
+  background: #f0f5ff !important;
+}
+
+/* =============================================
+   히어로
+   ============================================= */
+.nih-hero {
+  background: linear-gradient(135deg, #1e7fd4 0%, #0d4a8a 100%) !important;
+  padding: 64px 20px 52px !important;
+  text-align: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.nih-hero-inner {
+  max-width: 760px !important;
+  margin: 0 auto !important;
+}
+.nih-hero-title {
+  font-size: 34px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  margin: 0 0 12px !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.3 !important;
+  border: none !important;
+}
+.nih-hero-sub {
+  font-size: 16px !important;
+  color: rgba(255,255,255,0.82) !important;
+  margin: 0 0 30px !important;
+  line-height: 1.6 !important;
+}
+
+/* 검색창 */
+.nih-search-wrap {
+  max-width: 600px !important;
+  margin: 0 auto 36px !important;
+}
+.nih-search-box {
+  display: flex !important;
+  background: #fff !important;
+  border-radius: 50px !important;
+  overflow: hidden !important;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.22) !important;
+  height: 54px !important;
+}
+.nih-search-input {
+  flex: 1 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 22px !important;
+  font-size: 15px !important;
+  background: transparent !important;
+  color: #333 !important;
+  min-width: 0 !important;
+  height: 100% !important;
+}
+.nih-search-input::placeholder { color: #aaa !important; }
+.nih-search-btn {
+  background: #e84c3d !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 0 30px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  border-radius: 0 50px 50px 0 !important;
+  transition: background 0.2s !important;
+  height: 100% !important;
+}
+.nih-search-btn:hover { background: #c0392b !important; }
+
+/* 통계 */
+.nih-stats {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 40px !important;
+  flex-wrap: wrap !important;
+}
+.nih-stat-num {
+  display: block !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  line-height: 1.2 !important;
+}
+.nih-stat-label {
+  display: block !important;
+  font-size: 13px !important;
+  color: rgba(255,255,255,0.72) !important;
+  margin-top: 3px !important;
+}
+
+/* =============================================
+   카테고리 스트립 (히어로 바로 아래)
+   ============================================= */
+.nih-cats-wrap {
+  background: #fff !important;
+  border-bottom: 1px solid #e8eaed !important;
+  padding: 24px 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.nih-cats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  max-width: 1160px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.nih-cat-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 18px 22px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e8eaed !important;
+  border-radius: 12px !important;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important;
+  color: #1a1a2e !important;
+}
+.nih-cat-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09) !important;
+  border-color: #1a6fbf !important;
+}
+.nih-cat-icon {
+  font-size: 30px !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+}
+.nih-cat-info h3 {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  margin: 0 0 3px !important;
+  padding: 0 !important;
+  color: #1a1a2e !important;
+  border: none !important;
+  background: none !important;
+}
+.nih-cat-info p {
+  font-size: 13px !important;
+  color: #888 !important;
+  margin: 0 !important;
+}
+
+/* =============================================
+   본문 컨텐츠 영역
+   ============================================= */
+.nih-body-wrap {
+  background: #f5f6f8 !important;
+  width: 100% !important;
+}
+.nih-inner {
+  max-width: 1160px !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* =============================================
+   섹션 공통
+   ============================================= */
+.nih-section {
+  padding: 44px 0 0 !important;
+}
+.nih-section:last-child {
+  padding-bottom: 52px !important;
+}
+.nih-section-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 18px !important;
+}
+.nih-section-head h2 {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: #1a1a2e !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.nih-more-link {
+  font-size: 14px !important;
+  color: #1a6fbf !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+.nih-more-link:hover { color: #0d4a8a !important; }
+
+/* =============================================
+   포스트 카드 그리드
+   ============================================= */
+.nih-posts-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 18px !important;
+}
+.nih-post-card {
+  display: flex !important;
+  flex-direction: column !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  border: 1px solid #e8eaed !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  color: #1a1a2e !important;
+}
+.nih-post-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+}
+.nih-post-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+.nih-post-badge {
+  display: inline-block !important;
+  background: #e8f0fb !important;
+  color: #1a6fbf !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+}
+.nih-badge-column { background: #f0fff0 !important; color: #27ae60 !important; }
+.nih-badge-welfare { background: #fff6e8 !important; color: #e67e22 !important; }
+.nih-dday-badge {
+  display: inline-block !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+}
+.nih-dday-red   { background: #fff0f0 !important; color: #e84c3d !important; }
+.nih-dday-orange { background: #fff6e8 !important; color: #e67e22 !important; }
+.nih-post-date { font-size: 12px !important; color: #bbb !important; }
+.nih-post-title {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.55 !important;
+  margin: 0 0 8px !important;
+  flex: 1 !important;
+  color: #1a1a2e !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+.nih-post-card:hover .nih-post-title { color: #1a6fbf !important; }
+.nih-post-excerpt {
+  font-size: 13px !important;
+  color: #888 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 12px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+.nih-post-footer {
+  font-size: 12px !important;
+  color: #bbb !important;
+  border-top: 1px solid #f0f0f0 !important;
+  padding-top: 10px !important;
+  margin-top: auto !important;
+}
+
+/* =============================================
+   카테고리/아카이브 페이지 (Astra 오버라이드)
+   ============================================= */
+.archive .ast-container,
+.category .ast-container {
+  max-width: 1200px !important;
+}
+
+/* 페이지 전체 배경 — 카드와 구분되는 중간 회색 */
+body.archive,
+body.category,
+.archive #page,
+.category #page,
+.archive #content,
+.category #content,
+.archive #primary,
+.category #primary,
+.archive .site-content,
+.category .site-content {
+  background: #dde2e8 !important;
+}
+
+/* ── 카테고리 헤더 배너 ─────────────────────── */
+body.archive .page-header,
+body.category .page-header,
+body.archive .ast-archive-description,
+body.category .ast-archive-description,
+.archive header.page-header,
+.category header.page-header {
+  background: linear-gradient(135deg, #1e7fd4 0%, #0d4a8a 100%) !important;
+  /* 헤더를 카드 그리드와 동일한 max-width+margin으로 맞춤 */
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 36px 24px 32px !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  /* 배너가 넘치는 문제 방지 */
+  width: 100% !important;
+}
+body.category-welfare .page-header,
+body.category-welfare .ast-archive-description {
+  background: linear-gradient(135deg, #2ecc8a 0%, #1a7a50 100%) !important;
+}
+body.category-column .page-header,
+body.category-column .ast-archive-description {
+  background: linear-gradient(135deg, #9b59b6 0%, #6c3483 100%) !important;
+}
+body.archive .page-header *,
+body.category .page-header *,
+body.archive .ast-archive-description *,
+body.category .ast-archive-description * {
+  color: #fff !important;
+}
+body.archive .page-title,
+body.category .page-title,
+body.archive h1.page-title,
+body.category h1.page-title {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  margin: 0 !important;
+  letter-spacing: -0.3px !important;
+}
+
+/* ── 그리드 레이아웃 ────────────────────────── */
+.archive .ast-archive-page,
+.category .ast-archive-page {
+  padding: 28px 24px 60px !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+}
+.archive .ast-blog-layout-grid,
+.category .ast-blog-layout-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 32px !important;  /* 간격 더 넓게 */
+}
+
+/* ── 카드 공통 ──────────────────────────────── */
+.archive article.type-post,
+.category article.type-post {
+  background: #fff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.11) !important;
+  border: none !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  transition: transform 0.22s, box-shadow 0.22s !important;
+}
+.archive article.type-post:hover,
+.category article.type-post:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.20) !important;
+}
+.archive .ast-article-post,
+.category .ast-article-post { padding: 0 !important; }
+
+/* ── 배지 영역 ──────────────────────────────── */
+.archive .ast-terms-list,
+.category .ast-terms-list {
+  background: #f0f5ff !important;
+  padding: 14px 18px 8px !important;
+  margin: 0 !important;
+}
+.archive .ast-terms-list a,
+.category .ast-terms-list a {
+  background: #1a6fbf !important;
+  color: #fff !important;
+  padding: 4px 13px !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+body.category-welfare .ast-terms-list {
+  background: #edfaf4 !important;
+}
+body.category-welfare .ast-terms-list a {
+  background: #27ae60 !important;
+}
+body.category-column .ast-terms-list {
+  background: #f5eefa !important;
+}
+body.category-column .ast-terms-list a {
+  background: #8e44ad !important;
+}
+
+/* ── 제목 영역 (배지와 동일 배경, 구분선으로 본문과 분리) ── */
+.archive .entry-header,
+.category .entry-header {
+  background: #f0f5ff !important;
+  padding: 10px 18px 16px !important;
+  border-bottom: 2px solid #d6e4f7 !important;
+}
+body.category-welfare .entry-header {
+  background: #edfaf4 !important;
+  border-bottom-color: #b8e8cc !important;
+}
+body.category-column .entry-header {
+  background: #f5eefa !important;
+  border-bottom-color: #d9b8f0 !important;
+}
+.archive .entry-title,
+.category .entry-title {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+  margin: 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+.archive .entry-title a,
+.category .entry-title a { color: #1a2a4a !important; }
+.archive .entry-title a:hover,
+.category .entry-title a:hover { color: #1a6fbf !important; }
+
+/* ── 날짜/저자 — 흰 박스 제거, 배경색 그대로 유지 ── */
+.archive .entry-meta,
+.category .entry-meta {
+  background: transparent !important;   /* 흰 박스 제거 */
+  font-size: 13px !important;
+  padding: 8px 18px 4px !important;
+}
+/* 카테고리별 메타 텍스트 색상 (배경과 대비) */
+.archive .entry-meta,
+.archive .entry-meta a,
+.category .entry-meta,
+.category .entry-meta a {
+  color: #5a7aaa !important;   /* 파란 배경에 어울리는 중간 파랑 */
+}
+body.category-welfare .entry-meta,
+body.category-welfare .entry-meta a {
+  color: #2d8a58 !important;
+}
+body.category-column .entry-meta,
+body.category-column .entry-meta a {
+  color: #7a3d9a !important;
+}
+
+/* ── 발췌문 — 흰 배경, 어르신 가독성 ─────── */
+.archive .entry-content,
+.category .entry-content {
+  background: #fff !important;
+  padding: 10px 18px 22px !important;
+  font-size: 14px !important;
+  color: #3a3a4a !important;
+  line-height: 1.8 !important;
+}
+.archive .read-more, .archive .more-link,
+.category .read-more, .category .more-link { display: none !important; }
+
+/* 페이지네이션 */
+.archive .ast-pagination-container,
+.category .ast-pagination-container {
+  padding: 20px 0 48px !important;
+  text-align: center !important;
+}
+
+/* =============================================
+   검색 결과 페이지
+   ============================================= */
+.search-results .page-header {
+  background: #fff !important;
+  padding: 28px 0 20px !important;
+  border-bottom: 1px solid #e8eaed !important;
+  margin-bottom: 24px !important;
+}
+.search-results .page-title {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+}
+
+/* =============================================
+   복지혜택 상세
+   ============================================= */
+.welfare-detail h2 {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #1a1a2e !important;
+  border-left: 4px solid #1a6fbf !important;
+  padding-left: 12px !important;
+  margin: 28px 0 12px !important;
+  background: none !important;
+}
+.welfare-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 8px 0 20px !important;
+  font-size: 14px !important;
+}
+.welfare-table th {
+  background: #f0f5ff !important;
+  color: #1a6fbf !important;
+  font-weight: 700 !important;
+  padding: 11px 14px !important;
+  text-align: left !important;
+  width: 110px !important;
+  border: 1px solid #dde8f8 !important;
+}
+.welfare-table td {
+  padding: 11px 14px !important;
+  border: 1px solid #eee !important;
+  color: #444 !important;
+  line-height: 1.7 !important;
+}
+.welfare-link { margin: 20px 0 !important; }
+.welfare-link a {
+  display: inline-block !important;
+  background: #1a6fbf !important;
+  color: #fff !important;
+  padding: 13px 26px !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  transition: background 0.2s !important;
+}
+.welfare-link a:hover { background: #0d4a8a !important; color: #fff !important; }
+.data-source {
+  font-size: 12px !important;
+  color: #aaa !important;
+  border-top: 1px solid #eee !important;
+  padding-top: 12px !important;
+  margin-top: 24px !important;
+}
+
+/* =============================================
+   노인일자리 테이블
+   ============================================= */
+.job-detail h2 {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  border-left: 4px solid #1a6fbf !important;
+  padding-left: 12px !important;
+  margin: 0 0 14px !important;
+  background: none !important;
+}
+.job-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 14px !important;
+}
+.job-table th {
+  background: #f0f5ff !important;
+  color: #1a6fbf !important;
+  font-weight: 700 !important;
+  padding: 11px 14px !important;
+  text-align: left !important;
+  width: 100px !important;
+  border: 1px solid #dde8f8 !important;
+}
+.job-table td {
+  padding: 11px 14px !important;
+  border: 1px solid #eee !important;
+  color: #444 !important;
+  line-height: 1.7 !important;
+}
+
+/* =============================================
+   지역 필터 바 (senior-job 아카이브)
+   ============================================= */
+.category-senior-job .nih-region-filter {
+  grid-column: 1 / -1 !important;   /* 3열 그리드 전체 너비 차지 */
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  padding: 4px 0 20px !important;
+  border-bottom: 1px solid #d6e4f7 !important;
+  margin-bottom: 8px !important;
+}
+.nih-region-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 7px 16px !important;
+  border-radius: 20px !important;
+  border: 1.5px solid #c8d9ef !important;
+  background: #f0f5ff !important;
+  color: #1a4a8a !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all .15s !important;
+  white-space: nowrap !important;
+}
+.nih-region-btn:hover {
+  border-color: #1a6fbf !important;
+  color: #1a6fbf !important;
+  background: #e0ecfb !important;
+}
+.nih-region-btn.active {
+  background: #1a6fbf !important;
+  border-color: #1a6fbf !important;
+  color: #fff !important;
+}
+.nih-region-cnt {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  opacity: 0.75 !important;
+}
+
+/* =============================================
+   반응형
+   ============================================= */
+@media (max-width: 900px) {
+  .nih-cats-grid,
+  .nih-posts-grid,
+  .archive .ast-blog-layout-grid,
+  .category .ast-blog-layout-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .nih-hero-title { font-size: 26px !important; }
+  .nih-stats { gap: 28px !important; }
+}
+@media (max-width: 600px) {
+  .nih-cats-grid,
+  .nih-posts-grid,
+  .archive .ast-blog-layout-grid,
+  .category .ast-blog-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .nih-hero-title { font-size: 22px !important; }
+  .nih-search-btn { padding: 0 18px !important; }
+  .nih-stats { gap: 18px !important; }
+  .nih-region-btn { font-size: 13px !important; padding: 6px 12px !important; }
+}

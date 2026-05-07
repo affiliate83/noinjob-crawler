@@ -494,3 +494,57 @@ function noinjob_schema_markup() {
 }
 add_action( 'wp_head', 'noinjob_schema_markup' );
 
+
+/* ==========================================================
+   지역 필터 — /category/senior-job 아카이브
+   ========================================================== */
+
+// pre_get_posts: ?region=slug 파라미터 → job_region 택소노미 필터
+function noinjob_filter_region_query( $query ) {
+    if ( is_admin() || ! $query->is_main_query() ) return;
+    if ( ! $query->is_category( 'senior-job' ) ) return;
+    $region = isset( $_GET['region'] ) ? sanitize_key( $_GET['region'] ) : '';
+    if ( $region && $region !== 'all' ) {
+        $query->set( 'tax_query', [[
+            'taxonomy' => 'job_region',
+            'field'    => 'slug',
+            'terms'    => $region,
+        ]]);
+    }
+}
+add_action( 'pre_get_posts', 'noinjob_filter_region_query' );
+
+// loop_start: 첫 포스트 렌더 직전에 지역 필터 바 HTML 삽입
+function noinjob_inject_region_filter( $query ) {
+    if ( ! $query->is_main_query() ) return;
+    if ( ! $query->is_category( 'senior-job' ) ) return;
+    static $done = false;
+    if ( $done ) return;
+    $done = true;
+
+    $current  = isset( $_GET['region'] ) ? sanitize_key( $_GET['region'] ) : 'all';
+    $terms    = get_terms( [
+        'taxonomy'   => 'job_region',
+        'hide_empty' => true,
+        'orderby'    => 'count',
+        'order'      => 'DESC',
+    ] );
+    if ( is_wp_error( $terms ) || empty( $terms ) ) return;
+
+    $base_url = get_category_link( get_queried_object_id() );
+
+    echo '<div class="nih-region-filter">';
+    $all_cls = ( $current === 'all' ) ? ' active' : '';
+    echo '<a href="' . esc_url( $base_url ) . '" class="nih-region-btn' . $all_cls . '">전체</a>';
+    foreach ( $terms as $term ) {
+        $cls = ( $current === $term->slug ) ? ' active' : '';
+        $url = add_query_arg( 'region', $term->slug, $base_url );
+        echo '<a href="' . esc_url( $url ) . '" class="nih-region-btn' . $cls . '">'
+            . esc_html( $term->name )
+            . '<span class="nih-region-cnt">' . $term->count . '</span>'
+            . '</a>';
+    }
+    echo '</div>';
+}
+add_action( 'loop_start', 'noinjob_inject_region_filter' );
+
