@@ -43,6 +43,7 @@ def run():
             category=item.get('category', 'senuri'),
             excerpt=item.get('excerpt', ''),
             deadline=item.get('deadline', ''),
+            region=item.get('region'),
         )
 
         if post_id:

@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from utils.logger import logger
 from utils.enricher import enrich_job
+from utils.region import extract_region
 
 load_dotenv()
 
@@ -148,6 +149,7 @@ def fetch(max_pages=5):
             address = _xml_text(detail, 'plDetAddr') if detail is not None else ''
             excerpt = f"{company} | {emp_type} | {address}".strip(' |')
             deadline = fmt_date(_xml_text(item, 'toDd'))
+            region = extract_region(address)
 
             results.append({
                 'item_id': f"senuri_{job_id}",
@@ -155,6 +157,7 @@ def fetch(max_pages=5):
                 'content': content,
                 'excerpt': excerpt,
                 'deadline': deadline,
+                'region': region,
                 'post_type': 'post',
                 'category': 'senuri',
             })

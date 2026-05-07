@@ -15,6 +15,44 @@ CATEGORY_IDS = {
     'welfare': 3,  # 복지혜택
 }
 
+_region_cache: dict[str, int] = {}
+
+
+def get_or_create_region_term(name: str, slug: str) -> int | None:
+    """job_region 택소노미 텀 ID 반환. 없으면 생성."""
+    if slug in _region_cache:
+        return _region_cache[slug]
+    try:
+        res = requests.get(
+            f"{WP_URL}/wp-json/wp/v2/job_region",
+            auth=(WP_USER, WP_APP_PASS),
+            params={'slug': slug, 'per_page': 1},
+            timeout=10,
+        )
+        terms = res.json()
+        if isinstance(terms, list) and terms:
+            _region_cache[slug] = terms[0]['id']
+            return _region_cache[slug]
+    except Exception as e:
+        logger.error(f"[WP] 지역 텀 조회 실패: {e}")
+        return None
+    try:
+        res = requests.post(
+            f"{WP_URL}/wp-json/wp/v2/job_region",
+            auth=(WP_USER, WP_APP_PASS),
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps({'name': name, 'slug': slug}),
+            timeout=10,
+        )
+        if res.status_code == 201:
+            term_id = res.json().get('id')
+            _region_cache[slug] = term_id
+            logger.info(f"[WP] 지역 텀 생성: {name} (ID:{term_id})")
+            return term_id
+    except Exception as e:
+        logger.error(f"[WP] 지역 텀 생성 실패: {e}")
+    return None
+
 
 def post_exists(title: str) -> bool:
     try:
@@ -45,7 +83,7 @@ def _save_post_meta(post_id: int, key: str, value: str):
         logger.error(f"[WP] 메타 저장 실패 ID:{post_id} {key}: {e}")
 
 
-def create_post(title: str, content: str, category: str = 'senuri', excerpt: str = '', deadline: str = '') -> int | None:
+def create_post(title: str, content: str, category: str = 'senuri', excerpt: str = '', deadline: str = '', region: tuple | None = None) -> int | None:
     if not all([WP_URL, WP_USER, WP_APP_PASS]):
         logger.error("[WP] .env 연결 정보 누락")
         return None
@@ -60,6 +98,12 @@ def create_post(title: str, content: str, category: str = 'senuri', excerpt: str
     cat_id = CATEGORY_IDS.get(category)
     if cat_id:
         data['categories'] = [cat_id]
+
+    if region:
+        name, slug = region
+        term_id = get_or_create_region_term(name, slug)
+        if term_id:
+            data['job_region'] = [term_id]
 
     try:
         res = requests.post(
