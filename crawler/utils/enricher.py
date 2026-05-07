@@ -56,7 +56,7 @@ def enrich_job(data: dict) -> str:
 (아래 형식으로 Q&A 3개)
 <div class='faq-item'><h3 class='faq-q'>Q. 질문내용</h3><p class='faq-a'>A. 답변내용</p></div>
 
-규칙: HTML 속성은 작은따옴표. 없는 정보 지어내지 말 것. 쉽고 친근한 말투."""
+규칙: HTML 속성은 작은따옴표. h1 태그 절대 사용 금지(h2·h3만). 코드 펜스(```) 절대 사용 금지. 없는 정보 지어내지 말 것. 쉽고 친근한 말투."""
 
     try:
         msg = client.messages.create(
@@ -102,7 +102,7 @@ def enrich_welfare(data: dict) -> str:
 (아래 형식으로 Q&A 3개)
 <div class='faq-item'><h3 class='faq-q'>Q. 질문내용</h3><p class='faq-a'>A. 답변내용</p></div>
 
-규칙: HTML 속성은 작은따옴표. 없는 정보 지어내지 말 것. 쉽고 친근한 말투."""
+규칙: HTML 속성은 작은따옴표. h1 태그 절대 사용 금지(h2·h3만). 코드 펜스(```) 절대 사용 금지. 없는 정보 지어내지 말 것. 쉽고 친근한 말투."""
 
     try:
         msg = client.messages.create(
@@ -152,7 +152,7 @@ def enrich_from_html(html: str, post_type: str) -> str:
 (아래 형식으로 Q&A 3개)
 <div class='faq-item'><h3 class='faq-q'>Q. 질문내용</h3><p class='faq-a'>A. 답변내용</p></div>
 
-규칙: HTML 속성은 작은따옴표. 기존 내용 기반으로 작성. 쉽고 친근한 말투."""
+규칙: HTML 속성은 작은따옴표. h1 태그 절대 사용 금지(h2·h3만). 코드 펜스(```) 절대 사용 금지. 기존 내용 기반으로 작성. 쉽고 친근한 말투."""
 
     try:
         msg = client.messages.create(

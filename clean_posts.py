@@ -14,6 +14,10 @@ WP_URL      = os.getenv('WP_URL')
 WP_USER     = os.getenv('WP_USER')
 WP_APP_PASS = os.getenv('WP_APP_PASS')
 
+# h1 → h2 치환 (포스트 콘텐츠 내 h1 태그는 SEO 오류 유발)
+H1_OPEN  = re.compile(r'<h1(\s[^>]*)?>', re.IGNORECASE)
+H1_CLOSE = re.compile(r'</h1>', re.IGNORECASE)
+
 # 제거할 패턴들
 PATTERNS = [
     # <p class="data-source">...</p>
@@ -33,6 +37,9 @@ PATTERNS = [
 def clean_content(html: str) -> str:
     for pat in PATTERNS:
         html = pat.sub('', html)
+    # 포스트 본문 내 h1 태그를 h2로 교체 (테마 title h1과 중복 방지)
+    html = H1_OPEN.sub(r'<h2\1>', html)
+    html = H1_CLOSE.sub('</h2>', html)
     return html.strip()
 
 
