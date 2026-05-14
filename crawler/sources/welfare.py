@@ -4,7 +4,6 @@ import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from utils.logger import logger
-from utils.enricher import enrich_welfare
 
 load_dotenv()
 
@@ -124,18 +123,6 @@ def _build_content(item, detail):
             f'</div>\n\n'
         )
 
-    enriched = enrich_welfare({
-        'name':     _xml_text(item, 'servNm'),
-        'overview': overview,
-        'target':   target,
-        'criteria': criteria,
-        'how_to':   how_to,
-        'dept':     dept,
-        'method':   method,
-    })
-    if enriched:
-        content += enriched + '\n\n'
-
     content += '</div>'
     return content
 
@@ -155,11 +142,24 @@ def fetch(max_items=100):
         time.sleep(2)
         detail = _get_welfare_detail(service_id)
 
-        title = f"[복지혜택] {_xml_text(item, 'servNm')}"
+        name    = _xml_text(item, 'servNm')
+        title   = f"[복지혜택] {name}"
         content = _build_content(item, detail)
-
         summary = _xml_text(item, 'servDgst')
         excerpt = summary[:100] if summary else ''
+
+        overview = _xml_text(item, 'servDgst')
+        dept     = _xml_text(item, 'jurMnofNm')
+        method   = _xml_text(item, 'srvPvsnNm')
+        if detail is not None:
+            overview = _xml_text(detail, 'wlfareInfoOutlCn') or overview
+            target   = _xml_text(detail, 'tgtrDtlCn') or _xml_text(item, 'tgtrDtlCn')
+            criteria = _xml_text(detail, 'slctCritCn')
+            how_to   = _xml_text(detail, 'alwServCn')
+        else:
+            target   = _xml_text(item, 'tgtrDtlCn')
+            criteria = ''
+            how_to   = ''
 
         results.append({
             'item_id': f"welfare_{service_id}",
@@ -168,6 +168,10 @@ def fetch(max_items=100):
             'excerpt': excerpt,
             'post_type': 'post',
             'category': 'welfare',
+            '_enrich_data': {
+                'name': name, 'overview': overview, 'target': target,
+                'criteria': criteria, 'how_to': how_to, 'dept': dept, 'method': method,
+            },
         })
 
     logger.info(f"[복지서비스] 수집 완료 — {len(results)}건")

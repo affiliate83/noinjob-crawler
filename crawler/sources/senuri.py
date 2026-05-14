@@ -4,7 +4,6 @@ import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from utils.logger import logger
-from utils.enricher import enrich_job
 from utils.region import extract_region
 
 load_dotenv()
@@ -107,17 +106,7 @@ def _build_content(item, detail):
         for k, v in rows if v
     )
 
-    content = f'<div class="job-detail">\n\n<h2>채용 정보</h2>\n<table class="job-table">\n{table_rows}\n</table>\n\n'
-
-    enriched = enrich_job({
-        'company': company, 'address': address, 'emp_type': emp_type,
-        'count': count, 'age': age, 'start_date': start_date,
-        'deadline': deadline, 'etc': etc,
-    })
-    if enriched:
-        content += enriched + '\n\n'
-
-    content += '</div>'
+    content = f'<div class="job-detail">\n\n<h2>채용 정보</h2>\n<table class="job-table">\n{table_rows}\n</table>\n\n</div>'
     return content
 
 
@@ -141,25 +130,32 @@ def fetch(max_pages=5):
             time.sleep(2)
             detail = _get_job_detail(job_id)
 
-            company = _xml_text(item, 'oranNm')
-            title = f"[노인일자리] {_xml_text(item, 'recrtTitle') or company}"
-            content = _build_content(item, detail)
-
-            emp_type = EMPL_TYPE.get(_xml_text(item, 'emplymShpNm'), _xml_text(item, 'emplymShpNm'))
-            address = _xml_text(detail, 'plDetAddr') if detail is not None else ''
-            excerpt = f"{company} | {emp_type} | {address}".strip(' |')
-            deadline = fmt_date(_xml_text(item, 'toDd'))
-            region = extract_region(address)
+            company    = _xml_text(item, 'oranNm')
+            title      = f"[노인일자리] {_xml_text(item, 'recrtTitle') or company}"
+            emp_type   = EMPL_TYPE.get(_xml_text(item, 'emplymShpNm'), _xml_text(item, 'emplymShpNm'))
+            address    = _xml_text(detail, 'plDetAddr') if detail is not None else ''
+            age        = _xml_text(detail, 'age') if detail is not None else ''
+            count      = _xml_text(detail, 'clltPrnnum') if detail is not None else ''
+            start_date = fmt_date(_xml_text(item, 'frDd'))
+            deadline   = fmt_date(_xml_text(item, 'toDd'))
+            etc        = _xml_text(detail, 'etcItm') if detail is not None else ''
+            excerpt    = f"{company} | {emp_type} | {address}".strip(' |')
+            region     = extract_region(address)
 
             results.append({
                 'item_id': f"senuri_{job_id}",
                 'title': title,
-                'content': content,
+                'content': _build_content(item, detail),
                 'excerpt': excerpt,
                 'deadline': deadline,
                 'region': region,
                 'post_type': 'post',
                 'category': 'senuri',
+                '_enrich_data': {
+                    'company': company, 'address': address, 'emp_type': emp_type,
+                    'count': count, 'age': age, 'start_date': start_date,
+                    'deadline': deadline, 'etc': etc,
+                },
             })
 
         if len(items) < 100:

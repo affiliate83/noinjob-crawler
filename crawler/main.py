@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from utils.logger import logger
 from utils.dedup import is_published, mark_published
+from utils.enricher import enrich_job, enrich_welfare
 from sources import senuri, welfare
 from poster.wordpress import post_exists, create_post
 
@@ -36,6 +37,18 @@ def run():
             mark_published(item_id, title)
             skip += 1
             continue
+
+        enrich_data = item.get('_enrich_data', {})
+        if enrich_data:
+            category = item.get('category', '')
+            if category == 'senuri':
+                enriched = enrich_job(enrich_data)
+            elif category == 'welfare':
+                enriched = enrich_welfare(enrich_data)
+            else:
+                enriched = ''
+            if enriched:
+                item['content'] = item['content'].rsplit('</div>', 1)[0] + enriched + '\n\n</div>'
 
         post_id = create_post(
             title=title,
