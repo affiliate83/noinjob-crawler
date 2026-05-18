@@ -47,3 +47,6 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: dedup.db 업데이트 $(date +'%Y-%m-%d')"
           git pull --rebase
           git push
+
+      - name: 사이트맵 ping (네이버/구글 색인 요청)
+        run: python crawler/sitemap_ping.py
