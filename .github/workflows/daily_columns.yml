@@ -24,15 +24,11 @@ jobs:
       - name: 의존성 설치
         run: pip install -r requirements.txt
 
-      - name: .env 생성
-        run: |
-          cat > .env << 'EOF'
-          WP_URL=${{ secrets.WP_URL }}
-          WP_USER=${{ secrets.WP_USER }}
-          WP_APP_PASS=${{ secrets.WP_APP_PASS }}
-          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-          PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}
-          EOF
-
       - name: 칼럼 2개 자동 발행
         run: python crawler/daily_columns.py
+        env:
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
