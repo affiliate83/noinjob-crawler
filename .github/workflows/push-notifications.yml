@@ -1,0 +1,31 @@
+name: 노인잡 푸시 알림 발송
+
+on:
+  schedule:
+    - cron: '0 0 * * *'    # KST 09:00 (UTC 00:00)
+    - cron: '0 3 * * *'    # KST 12:00 (UTC 03:00)
+    - cron: '0 10 * * *'   # KST 19:00 (UTC 10:00)
+  workflow_dispatch:        # GitHub에서 수동 실행 버튼
+
+jobs:
+  send-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 푸시 알림 발송 트리거
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -H "Accept: application/json" \
+            "https://noinjob.kr/wp-json/noinjob/v1/send-push-now?secret=${{ secrets.PUSH_NOTIFY_SECRET }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "응답 코드: $HTTP_CODE"
+          echo "응답 내용: $BODY"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::푸시 발송 실패 (HTTP $HTTP_CODE)"
+            exit 1
+          fi

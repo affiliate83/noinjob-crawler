@@ -383,6 +383,24 @@ add_action( 'init', function() {
 
 
 /* ==========================================================
+   로고 강제 적용 (Customizer 우회)
+   - logo.svg가 theme 폴더에 있으므로 Customizer 없이 직접 적용
+   ========================================================== */
+add_filter( 'get_custom_logo', function( $html ) {
+    if ( ! empty( $html ) ) return $html;
+    return sprintf(
+        '<a href="%s" class="custom-logo-link" rel="home"><img src="%s/logo.svg" class="custom-logo" alt="%s" width="200" height="52" loading="eager"></a>',
+        esc_url( home_url( '/' ) ),
+        esc_url( get_template_directory_uri() ),
+        esc_attr( get_bloginfo( 'name' ) )
+    );
+}, 20 );
+
+// Astra SVG 아이콘 비활성화 (이미지 로고가 나오도록)
+add_filter( 'astra_get_option_site-logo-svg-icon', '__return_false' );
+
+
+/* ==========================================================
    보안: WordPress 버전 노출 제거
    ========================================================== */
 remove_action( 'wp_head', 'wp_generator' );
@@ -547,4 +565,200 @@ function noinjob_inject_region_filter( $query ) {
     echo '</div>';
 }
 add_action( 'loop_start', 'noinjob_inject_region_filter' );
+
+
+/* ==========================================================
+   단일 포스트 — 지역·모집상태 배지
+   ========================================================== */
+add_action( 'astra_entry_content_before', function() {
+    if ( ! is_singular( 'post' ) ) return;
+
+    $post_id  = get_the_ID();
+    $today    = date( 'Y-m-d' );
+    $deadline = get_post_meta( $post_id, '_deadline', true );
+
+    // 지역 배지
+    $regions     = wp_get_object_terms( $post_id, 'job_region' );
+    $region_html = '';
+    if ( ! empty( $regions ) && ! is_wp_error( $regions ) ) {
+        foreach ( $regions as $r ) {
+            $region_html .= '<span class="nih-s-badge nih-s-region">📍 ' . esc_html( $r->name ) . '</span>';
+        }
+    }
+
+    // 모집 상태 배지
+    $status_html = '';
+    if ( $deadline ) {
+        if ( $deadline < $today ) {
+            $status_html = '<span class="nih-s-badge nih-s-closed">마감</span>';
+        } elseif ( $deadline === $today ) {
+            $status_html = '<span class="nih-s-badge nih-s-open">모집중</span>'
+                         . '<span class="nih-s-badge nih-s-dday">D-Day</span>';
+        } else {
+            $diff        = (int) ceil( ( strtotime( $deadline ) - time() ) / 86400 );
+            $status_html = '<span class="nih-s-badge nih-s-open">모집중</span>'
+                         . '<span class="nih-s-badge nih-s-dday">D-' . $diff . '</span>';
+        }
+    }
+
+    if ( ! $region_html && ! $status_html ) return;
+
+    echo '<div class="nih-s-badges">' . $region_html . $status_html . '</div>';
+} );
+
+// ──────────────────────────────────────────────────────────
+// 노인잡 앱 푸시 토큰 관리 REST API
+// ──────────────────────────────────────────────────────────
+
+// 테이블 생성 (최초 1회)
+add_action( 'init', function () {
+    global $wpdb;
+    $table = $wpdb->prefix . 'noinjob_push_tokens';
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '$table'" ) !== $table ) {
+        $charset = $wpdb->get_charset_collate();
+        $wpdb->query( "CREATE TABLE $table (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            token VARCHAR(300) NOT NULL UNIQUE,
+            regions TEXT NOT NULL DEFAULT 'all',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) $charset;" );
+    }
+} );
+
+// REST API 등록
+add_action( 'rest_api_init', function () {
+
+    // POST /wp-json/noinjob/v1/push-token — 토큰 등록/업데이트
+    register_rest_route( 'noinjob/v1', '/push-token', [
+        'methods'             => 'POST',
+        'callback'            => function ( $req ) {
+            global $wpdb;
+            $token   = sanitize_text_field( $req->get_param('token') );
+            $regions = $req->get_param('regions'); // array
+
+            if ( ! $token ) return new WP_Error( 'no_token', '토큰 없음', [ 'status' => 400 ] );
+
+            $regions_json = is_array( $regions ) ? implode( ',', array_map( 'sanitize_key', $regions ) ) : 'all';
+
+            $table = $wpdb->prefix . 'noinjob_push_tokens';
+            $exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE token = %s", $token ) );
+
+            if ( $exists ) {
+                $wpdb->update( $table, [ 'regions' => $regions_json ], [ 'token' => $token ] );
+            } else {
+                $wpdb->insert( $table, [ 'token' => $token, 'regions' => $regions_json ] );
+            }
+            return [ 'success' => true ];
+        },
+        'permission_callback' => '__return_true',
+    ] );
+
+    // GET /wp-json/noinjob/v1/push-tokens?region=seoul — 지역별 토큰 조회 (크롤러용)
+    register_rest_route( 'noinjob/v1', '/push-tokens', [
+        'methods'             => 'GET',
+        'callback'            => function ( $req ) {
+            global $wpdb;
+            $region = sanitize_key( $req->get_param('region') );
+            $table  = $wpdb->prefix . 'noinjob_push_tokens';
+
+            if ( $region ) {
+                $rows = $wpdb->get_col( $wpdb->prepare(
+                    "SELECT token FROM $table WHERE regions = 'all' OR FIND_IN_SET(%s, regions) > 0",
+                    $region
+                ) );
+            } else {
+                $rows = $wpdb->get_col( "SELECT token FROM $table" );
+            }
+            return [ 'tokens' => $rows ];
+        },
+        'permission_callback' => '__return_true',
+    ] );
+
+    // GET /wp-json/noinjob/v1/send-push-now?secret=XXX — GitHub Actions 트리거
+    register_rest_route( 'noinjob/v1', '/send-push-now', [
+        'methods'             => 'GET',
+        'callback'            => function ( $req ) {
+            $secret   = sanitize_text_field( $req->get_param('secret') );
+            $expected = get_option('noinjob_push_secret', '');
+            if ( ! $expected || ! hash_equals( $expected, $secret ) ) {
+                return new WP_Error( 'forbidden', '인증 실패', [ 'status' => 403 ] );
+            }
+
+            // 오늘 등록된 노인일자리 새 공고
+            $today = date( 'Y-m-d' );
+            $posts = get_posts( [
+                'numberposts' => 5,
+                'cat'         => 2,
+                'post_status' => 'publish',
+                'date_query'  => [ [ 'after' => $today . ' 00:00:00', 'inclusive' => true ] ],
+                'orderby'     => 'date',
+                'order'       => 'DESC',
+            ] );
+
+            if ( empty( $posts ) ) {
+                return [ 'success' => true, 'sent' => 0, 'message' => '새 공고 없음' ];
+            }
+
+            $latest = $posts[0];
+            $count  = count( $posts );
+            $title  = '📢 새 노인일자리 공고';
+            $body   = $count > 1
+                ? get_the_title( $latest->ID ) . ' 외 ' . ( $count - 1 ) . '건'
+                : get_the_title( $latest->ID );
+
+            // 전체 토큰 가져오기
+            global $wpdb;
+            $table  = $wpdb->prefix . 'noinjob_push_tokens';
+            $tokens = $wpdb->get_col( "SELECT token FROM $table" );
+
+            if ( empty( $tokens ) ) {
+                return [ 'success' => true, 'sent' => 0, 'message' => '등록된 토큰 없음' ];
+            }
+
+            // Expo Push API 발송 (100개씩 chunked)
+            $sent   = 0;
+            $errors = 0;
+            foreach ( array_chunk( $tokens, 100 ) as $chunk ) {
+                $messages = array_map( fn( $t ) => [
+                    'to'    => $t,
+                    'title' => $title,
+                    'body'  => $body,
+                    'data'  => [ 'screen' => 'Jobs' ],
+                    'sound' => 'default',
+                ], $chunk );
+
+                $res = wp_remote_post( 'https://exp.host/--/api/v2/push/send', [
+                    'headers' => [ 'Content-Type' => 'application/json', 'Accept' => 'application/json' ],
+                    'body'    => wp_json_encode( $messages ),
+                    'timeout' => 30,
+                ] );
+
+                if ( is_wp_error( $res ) ) { $errors++; } else { $sent += count( $chunk ); }
+            }
+
+            return [ 'success' => true, 'sent' => $sent, 'errors' => $errors ];
+        },
+        'permission_callback' => '__return_true',
+    ] );
+
+} ); // end rest_api_init
+
+// app-ads.txt — AdMob 앱 인증용
+add_action( 'init', function () {
+    $uri = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
+    if ( $uri === '/app-ads.txt' ) {
+        header( 'Content-Type: text/plain; charset=utf-8' );
+        echo "google.com, pub-9578724205171459, DIRECT, f08c47fec0942fa0\n";
+        exit;
+    }
+} );
+
+// robots.txt에 sitemap 경로 추가 (애드센스 크롤러·Googlebot용)
+add_filter( 'robots_txt', function ( $output ) {
+    if ( strpos( $output, 'sitemap_index.xml' ) === false ) {
+        $output .= "\nSitemap: https://noinjob.kr/sitemap_index.xml\n";
+    }
+    return $output;
+}, 10, 1 );
 
