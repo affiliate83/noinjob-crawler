@@ -2,22 +2,46 @@ name: 노인잡 푸시 알림 발송
 
 on:
   schedule:
-    - cron: '0 0 * * *'    # KST 09:00 (UTC 00:00)
-    - cron: '0 3 * * *'    # KST 12:00 (UTC 03:00)
-    - cron: '0 10 * * *'   # KST 19:00 (UTC 10:00)
-  workflow_dispatch:        # GitHub에서 수동 실행 버튼
+    - cron: '0 0 * * *'    # KST 09:00 — 일자리 공고
+    - cron: '0 3 * * *'    # KST 12:00 — 칼럼
+    - cron: '0 9 * * *'    # KST 18:00 — 복지혜택 (19시 이후 발송 금지로 18시로 설정)
+  workflow_dispatch:
+    inputs:
+      push_type:
+        description: '알림 타입 (job / column / welfare)'
+        required: true
+        default: 'job'
+        type: choice
+        options: [job, column, welfare]
 
 jobs:
   send-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 푸시 알림 발송 트리거
+      - name: 알림 타입 결정
+        id: vars
         run: |
+          SCHEDULE="${{ github.event.schedule }}"
+          if [ "$SCHEDULE" = "0 0 * * *" ]; then
+            echo "push_type=job" >> $GITHUB_OUTPUT
+          elif [ "$SCHEDULE" = "0 3 * * *" ]; then
+            echo "push_type=column" >> $GITHUB_OUTPUT
+          elif [ "$SCHEDULE" = "0 9 * * *" ]; then
+            echo "push_type=welfare" >> $GITHUB_OUTPUT
+          else
+            echo "push_type=${{ github.event.inputs.push_type }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 푸시 알림 발송
+        run: |
+          PUSH_TYPE="${{ steps.vars.outputs.push_type }}"
+          echo "발송 타입: $PUSH_TYPE"
+
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -H "Accept: application/json" \
-            "https://noinjob.kr/wp-json/noinjob/v1/send-push-now?secret=${{ secrets.PUSH_NOTIFY_SECRET }}")
+            "https://noinjob.kr/wp-json/noinjob/v1/send-push-now?secret=${{ secrets.PUSH_NOTIFY_SECRET }}&type=$PUSH_TYPE")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)

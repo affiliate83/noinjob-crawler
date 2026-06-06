@@ -675,69 +675,157 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => '__return_true',
     ] );
 
-    // GET /wp-json/noinjob/v1/send-push-now?secret=XXX — GitHub Actions 트리거
+    // GET /wp-json/noinjob/v1/send-push-now?secret=XXX&type=job|column|welfare
     register_rest_route( 'noinjob/v1', '/send-push-now', [
         'methods'             => 'GET',
         'callback'            => function ( $req ) {
+            // 인증
             $secret   = sanitize_text_field( $req->get_param('secret') );
-            $expected = get_option('noinjob_push_secret', '');
+            $expected = get_option( 'noinjob_push_secret', '' );
             if ( ! $expected || ! hash_equals( $expected, $secret ) ) {
                 return new WP_Error( 'forbidden', '인증 실패', [ 'status' => 403 ] );
             }
 
-            // 오늘 등록된 노인일자리 새 공고
+            $type  = sanitize_key( $req->get_param('type') ?: 'job' );
             $today = date( 'Y-m-d' );
-            $posts = get_posts( [
-                'numberposts' => 5,
-                'cat'         => 2,
-                'post_status' => 'publish',
-                'date_query'  => [ [ 'after' => $today . ' 00:00:00', 'inclusive' => true ] ],
-                'orderby'     => 'date',
-                'order'       => 'DESC',
-            ] );
 
-            if ( empty( $posts ) ) {
-                return [ 'success' => true, 'sent' => 0, 'message' => '새 공고 없음' ];
-            }
-
-            $latest = $posts[0];
-            $count  = count( $posts );
-            $title  = '📢 새 노인일자리 공고';
-            $body   = $count > 1
-                ? get_the_title( $latest->ID ) . ' 외 ' . ( $count - 1 ) . '건'
-                : get_the_title( $latest->ID );
-
-            // 전체 토큰 가져오기
             global $wpdb;
-            $table  = $wpdb->prefix . 'noinjob_push_tokens';
-            $tokens = $wpdb->get_col( "SELECT token FROM $table" );
-
-            if ( empty( $tokens ) ) {
+            $table = $wpdb->prefix . 'noinjob_push_tokens';
+            $rows  = $wpdb->get_results( "SELECT token, regions FROM $table" );
+            if ( empty( $rows ) ) {
                 return [ 'success' => true, 'sent' => 0, 'message' => '등록된 토큰 없음' ];
             }
 
-            // Expo Push API 발송 (100개씩 chunked)
-            $sent   = 0;
-            $errors = 0;
-            foreach ( array_chunk( $tokens, 100 ) as $chunk ) {
-                $messages = array_map( fn( $t ) => [
-                    'to'    => $t,
-                    'title' => $title,
-                    'body'  => $body,
-                    'data'  => [ 'screen' => 'Jobs' ],
-                    'sound' => 'default',
-                ], $chunk );
+            $messages = [];
 
+            // ── 12:00 칼럼 알림 ──────────────────────────────
+            if ( $type === 'column' ) {
+                $col = get_posts( [
+                    'numberposts' => 1,
+                    'category_name' => 'column',
+                    'post_status' => 'publish',
+                    'orderby' => 'date', 'order' => 'DESC',
+                ] );
+                if ( empty( $col ) ) return [ 'success' => true, 'sent' => 0, 'message' => '칼럼 없음' ];
+                $col_title = get_the_title( $col[0]->ID );
+                foreach ( $rows as $row ) {
+                    $messages[] = [
+                        'to'    => $row->token,
+                        'title' => '📋 새 칼럼이 올라왔습니다',
+                        'body'  => $col_title,
+                        'data'  => [ 'screen' => 'Column' ],
+                        'sound' => 'default',
+                    ];
+                }
+
+            // ── 19:00 복지혜택 알림 ──────────────────────────
+            } elseif ( $type === 'welfare' ) {
+                $welfare = get_posts( [
+                    'numberposts' => 1,
+                    'cat'         => 3,
+                    'post_status' => 'publish',
+                    'orderby' => 'date', 'order' => 'DESC',
+                ] );
+                if ( empty( $welfare ) ) return [ 'success' => true, 'sent' => 0, 'message' => '복지혜택 없음' ];
+                $w_title = get_the_title( $welfare[0]->ID );
+                foreach ( $rows as $row ) {
+                    $messages[] = [
+                        'to'    => $row->token,
+                        'title' => '🏥 복지혜택 정보',
+                        'body'  => $w_title,
+                        'data'  => [ 'screen' => 'Welfare' ],
+                        'sound' => 'default',
+                    ];
+                }
+
+            // ── 09:00 일자리 알림 ────────────────────────────
+            } else {
+                // 오늘 새 일자리 공고
+                $job_posts = get_posts( [
+                    'numberposts' => -1,
+                    'cat'         => 2,
+                    'post_status' => 'publish',
+                    'date_query'  => [ [ 'after' => $today . ' 00:00:00', 'inclusive' => true ] ],
+                    'orderby' => 'date', 'order' => 'DESC',
+                ] );
+                if ( empty( $job_posts ) ) return [ 'success' => true, 'sent' => 0, 'message' => '새 일자리 공고 없음' ];
+
+                // 지역별 집계
+                $region_map = [];
+                foreach ( $job_posts as $post ) {
+                    $terms = wp_get_object_terms( $post->ID, 'job_region' );
+                    if ( ! is_wp_error( $terms ) ) {
+                        foreach ( $terms as $term ) {
+                            if ( ! isset( $region_map[ $term->slug ] ) )
+                                $region_map[ $term->slug ] = [ 'name' => $term->name, 'count' => 0 ];
+                            $region_map[ $term->slug ]['count']++;
+                        }
+                    }
+                }
+
+                // 최신 칼럼 1건 (지역 설정 사용자용 추가 정보)
+                $col = get_posts( [
+                    'numberposts' => 1,
+                    'category_name' => 'column',
+                    'post_status' => 'publish',
+                    'orderby' => 'date', 'order' => 'DESC',
+                ] );
+                $col_suffix = ! empty( $col ) ? ' · 칼럼 1건' : '';
+
+                $total     = count( $job_posts );
+                $gen_title = '📢 새 노인일자리 공고';
+                $gen_body  = $total > 1
+                    ? get_the_title( $job_posts[0]->ID ) . ' 외 ' . ( $total - 1 ) . '건'
+                    : get_the_title( $job_posts[0]->ID );
+
+                foreach ( $rows as $row ) {
+                    $user_regions = array_map( 'trim', explode( ',', $row->regions ) );
+                    $has_region   = ! in_array( 'all', $user_regions, true ) && ! empty( array_filter( $user_regions ) );
+
+                    if ( $has_region ) {
+                        // 지역 설정 사용자 → 해당 지역 새 공고 + 칼럼
+                        foreach ( $user_regions as $slug ) {
+                            if ( isset( $region_map[ $slug ] ) ) {
+                                $info       = $region_map[ $slug ];
+                                $messages[] = [
+                                    'to'    => $row->token,
+                                    'title' => '📍 ' . $info['name'] . ' 새 소식',
+                                    'body'  => '새 일자리 ' . $info['count'] . '건' . $col_suffix,
+                                    'data'  => [ 'screen' => 'Jobs' ],
+                                    'sound' => 'default',
+                                ];
+                                break;
+                            }
+                        }
+                    } else {
+                        // 일반 사용자 → 전체 일자리 공고
+                        $messages[] = [
+                            'to'    => $row->token,
+                            'title' => $gen_title,
+                            'body'  => $gen_body,
+                            'data'  => [ 'screen' => 'Jobs' ],
+                            'sound' => 'default',
+                        ];
+                    }
+                }
+            }
+
+            if ( empty( $messages ) ) {
+                return [ 'success' => true, 'sent' => 0, 'message' => '발송 대상 없음' ];
+            }
+
+            // Expo Push API 발송
+            $sent = 0; $errors = 0;
+            foreach ( array_chunk( $messages, 100 ) as $chunk ) {
                 $res = wp_remote_post( 'https://exp.host/--/api/v2/push/send', [
                     'headers' => [ 'Content-Type' => 'application/json', 'Accept' => 'application/json' ],
-                    'body'    => wp_json_encode( $messages ),
+                    'body'    => wp_json_encode( $chunk ),
                     'timeout' => 30,
                 ] );
-
                 if ( is_wp_error( $res ) ) { $errors++; } else { $sent += count( $chunk ); }
             }
 
-            return [ 'success' => true, 'sent' => $sent, 'errors' => $errors ];
+            return [ 'success' => true, 'type' => $type, 'sent' => $sent, 'errors' => $errors ];
         },
         'permission_callback' => '__return_true',
     ] );
