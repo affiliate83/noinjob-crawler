@@ -136,6 +136,9 @@ def get_existing_titles() -> set:
         params={'slug': COLUMN_CATEGORY_SLUG, 'per_page': 1},
         timeout=10,
     )
+    if res.status_code != 200 or not res.text.strip():
+        logger.warning(f'카테고리 조회 실패: HTTP {res.status_code}')
+        return titles
     cats = res.json()
     if not cats:
         return titles
@@ -166,6 +169,9 @@ def get_category_id(slug: str) -> int | None:
         params={'slug': slug, 'per_page': 1},
         timeout=10,
     )
+    if res.status_code != 200 or not res.text.strip():
+        logger.warning(f'카테고리 ID 조회 실패: HTTP {res.status_code}')
+        return None
     cats = res.json()
     return cats[0]['id'] if cats else None
 
