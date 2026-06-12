@@ -137,7 +137,7 @@ def get_existing_titles() -> set:
         timeout=10,
     )
     if res.status_code != 200 or not res.text.strip():
-        logger.warning(f'카테고리 조회 실패: HTTP {res.status_code}')
+        print(f'카테고리 조회 실패: HTTP {res.status_code}')
         return titles
     cats = res.json()
     if not cats:
@@ -170,7 +170,7 @@ def get_category_id(slug: str) -> int | None:
         timeout=10,
     )
     if res.status_code != 200 or not res.text.strip():
-        logger.warning(f'카테고리 ID 조회 실패: HTTP {res.status_code}')
+        print(f'카테고리 ID 조회 실패: HTTP {res.status_code}')
         return None
     cats = res.json()
     return cats[0]['id'] if cats else None
