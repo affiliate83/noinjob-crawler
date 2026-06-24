@@ -22,7 +22,8 @@ PEXELS_HEADERS = {'Authorization': PEXELS_API_KEY}
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 COLUMN_CATEGORY_SLUG = 'column'
-DAILY_LIMIT = 2
+# AdSense 심사 중에는 1개씩 초안으로 저장 — 수동 검토 후 공개
+DAILY_LIMIT = 1
 
 # 새 칼럼 주제 풀 (100개 — 기존 73개와 중복 없는 주제)
 TOPICS = [
@@ -261,7 +262,7 @@ def publish_post(title: str, content: str, cat_id: int, media_id: int | None) ->
     data = {
         'title': title,
         'content': content,
-        'status': 'publish',
+        'status': 'draft',  # AdSense 심사 중: 초안 저장, 수동 검토 후 공개
         'categories': [cat_id],
     }
     if media_id:
