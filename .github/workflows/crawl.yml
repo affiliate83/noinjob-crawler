@@ -1,7 +1,9 @@
 name: noinjob 자동 크롤링
 
 on:
-  workflow_dispatch:       # GitHub에서 수동 실행 가능 (자동 예약 중지)
+  schedule:
+    - cron: '20 20 * * *'  # KST 05:20, 일 1회 (복지 API 일일 한도 보호)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -35,7 +37,7 @@ jobs:
           EOF
 
       - name: 크롤링 실행
-        run: python crawler/main.py
+        run: python crawler/main.py --no-push
 
       - name: dedup.db 커밋 (중복방지 DB 업데이트)
         run: |

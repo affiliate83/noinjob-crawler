@@ -3,6 +3,7 @@ import json
 import requests
 from dotenv import load_dotenv
 from utils.logger import logger
+from utils.push_sender import notify_new_job
 
 load_dotenv()
 
@@ -83,7 +84,15 @@ def _save_post_meta(post_id: int, key: str, value: str):
         logger.error(f"[WP] 메타 저장 실패 ID:{post_id} {key}: {e}")
 
 
-def create_post(title: str, content: str, category: str = 'senuri', excerpt: str = '', deadline: str = '', region: tuple | None = None) -> int | None:
+def create_post(
+    title: str,
+    content: str,
+    category: str = 'senuri',
+    excerpt: str = '',
+    deadline: str = '',
+    region: tuple | None = None,
+    send_notification: bool = True,
+) -> int | None:
     if not all([WP_URL, WP_USER, WP_APP_PASS]):
         logger.error("[WP] .env 연결 정보 누락")
         return None
@@ -118,6 +127,9 @@ def create_post(title: str, content: str, category: str = 'senuri', excerpt: str
             logger.info(f"[WP] 발행 성공 ID:{post_id} — {title[:40]}")
             if deadline and post_id:
                 _save_post_meta(post_id, '_deadline', deadline)
+            if send_notification:
+                region_slug = region[1] if region else None
+                notify_new_job(post_id, title, region_slug)
             return post_id
         else:
             logger.error(f"[WP] 발행 실패 {res.status_code}: {res.text[:200]}")

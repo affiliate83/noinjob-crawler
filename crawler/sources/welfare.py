@@ -127,6 +127,30 @@ def _build_content(item, detail):
     return content
 
 
+# 제목·개요에 이 단어가 있으면 비노인 복지 → 발행 스킵
+_NON_SENIOR = [
+    '임산부', '임신', '산모', '출산', '영아', '영유아', '신생아',
+    '어린이집', '유아', '아동', '어린이', '청소년',
+    '방과후', '돌봄교실', '초등돌봄', '육아휴직',
+]
+# 제목·개요에 이 단어가 있으면 노인 관련으로 허용
+_SENIOR = [
+    '어르신', '노인', '고령', '65세', '60세', '70세',
+    '시니어', '노령', '노년', '경로', '고령자',
+    '독거노인', '독거', '치매', '요양', '장기요양', '기초연금', '노인일자리',
+    '참전', '유공자', '국가보훈', '보훈',
+]
+
+
+def _is_senior_related(name: str, overview: str) -> bool:
+    text = (name + ' ' + overview).lower()
+    if any(kw in text for kw in _SENIOR):
+        return True
+    if any(kw in text for kw in _NON_SENIOR):
+        return False
+    return False  # 노인 키워드 없는 일반 복지 → 발행 스킵 (AdSense 주제 적합성)
+
+
 def fetch(max_items=100):
     logger.info("[복지서비스] 수집 시작")
     results = []
@@ -143,12 +167,18 @@ def fetch(max_items=100):
         detail = _get_welfare_detail(service_id)
 
         name    = _xml_text(item, 'servNm')
+        overview_preview = _xml_text(item, 'servDgst')
+
+        if not _is_senior_related(name, overview_preview):
+            logger.debug(f"[복지서비스] 비노인 대상 스킵: {name}")
+            continue
+
         title   = f"[복지혜택] {name}"
         content = _build_content(item, detail)
-        summary = _xml_text(item, 'servDgst')
+        summary = overview_preview
         excerpt = summary[:100] if summary else ''
 
-        overview = _xml_text(item, 'servDgst')
+        overview = overview_preview
         dept     = _xml_text(item, 'jurMnofNm')
         method   = _xml_text(item, 'srvPvsnNm')
         if detail is not None:
